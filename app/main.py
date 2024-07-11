@@ -1,4 +1,6 @@
 
+import socket
+
 
 def main():
     print("Logs from your program will appear here!")
