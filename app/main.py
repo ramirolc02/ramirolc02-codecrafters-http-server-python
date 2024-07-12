@@ -11,11 +11,13 @@ def main():
     req = connection.recv(1024).decode() # receive data
     data = req.split("\r\n")
 
-    response = "HTTP/1.1 200 OK\r\n\r\n".encode()
-    if data[0].split(" ")[0].startswith("echo/") :
-        string = data[0].split(" ")[0].split("/")[2]
-        response = f'HTTP/1.1 200 {string}\r\n\r\n'.encode()
-    elif data[0].split(" ")[1] != "/":
+    if data[0].split(" ")[1] == "/":
+        response = "HTTP/1.1 200 OK\r\n\r\n".encode()
+    elif data[0].split(" ")[1].startswith("/echo/") :
+        string = data[0].split(" ")[1].split("/")[2]
+        response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
+        print(response)
+    else:
         response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
     
     connection.send(response) # send response 
