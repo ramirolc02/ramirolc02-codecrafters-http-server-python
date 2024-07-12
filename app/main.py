@@ -18,11 +18,10 @@ def main():
         string = endpoint.split("/")[2]
         response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
     elif endpoint == "/user-agent":
-        userAgent = data[3].split(": ")[1]
+        userAgent = data[2].split(": ")[1]
         response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(userAgent)}\r\n\r\n{userAgent}'.encode()
     else:
         response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
-    print(response)
     connection.send(response) # send response 
     connection.close() # close the connection after sending the response
 
