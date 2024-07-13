@@ -6,18 +6,30 @@ import sys
 from threading import Thread
 
 
-def handle_request(connection, address,dir):
+def handle_compression(headers: str):
+    for line in headers:
+        if line.startswith("Accept-Encoding:"):
+            compressionType = line.split(": ")[1]
+            return compressionType
+    return "invalid-encoding"
+            
+
+def handle_request(connection, address):
     req = connection.recv(1024).decode() # receive data
     data = req.split("\r\n")
     type = data[0].split(" ")[0]
     endpoint = data[0].split(" ")[1]
-    response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
 
+    response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
     if endpoint == "/":
         response = "HTTP/1.1 200 OK\r\n\r\n".encode()
     elif endpoint.startswith("/echo/") :
         string = endpoint.split("/")[2]
-        response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
+        compressionType: str = handle_compression(data)
+        encoding = None
+        if compressionType != "invalid-encoding":
+            encoding = f'Content-Encoding: {compressionType}\r\n'
+        response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
     elif endpoint == "/user-agent":
         for line in data:
             if line.startswith("User-Agent:"):
@@ -25,6 +37,7 @@ def handle_request(connection, address,dir):
                 response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(userAgent)}\r\n\r\n{userAgent}'.encode()
                 break
     elif endpoint.startswith("/files/"):
+        dir = sys.argv[2]
         filePath = f'{dir}/{endpoint[7:]}'
         if type == "POST":
             content = data[-1]
@@ -41,16 +54,11 @@ def handle_request(connection, address,dir):
     connection.close() # close the connection after sending the response
 def main():
     print("Logs from your program will appear here!")
-    dir = None
-    flag = sys.argv[1] if len(sys.argv) > 2 else []
-    if "--directory" in flag:
-        dir = sys.argv[2]
-
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
 
     while True:
         connection, address = server_socket.accept() # wait for client 
-        thread = Thread(target=handle_request, args=(connection, address, dir))
+        thread = Thread(target=handle_request, args=(connection, address))
         thread.start()
 
 if __name__ == "__main__":  
