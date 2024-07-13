@@ -43,7 +43,10 @@ def main():
 
     while True:
         connection, address = server_socket.accept() # wait for client
-        thread = Thread(target=handle_request, args=(connection, address, dir)) if dir is not None else Thread(target=handle_request, args=(connection, address))
+        if dir: 
+            thread = Thread(target=handle_request, args=(connection, address, dir))
+        else: 
+            thread = Thread(target=handle_request, args=(connection, address))
         thread.start()
 
 if __name__ == "__main__":  
