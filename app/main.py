@@ -35,7 +35,8 @@ def handle_request(connection, address,dir):
     connection.close() # close the connection after sending the response
 def main():
     print("Logs from your program will appear here!")
-    flag = sys.argv[1] if len(sys.argv) > 1 else []
+    dir = None
+    flag = sys.argv[1] if len(sys.argv) > 2 else []
     if "--directory" in flag:
         dir = sys.argv[2]
 
