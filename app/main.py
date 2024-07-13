@@ -9,6 +9,7 @@ from threading import Thread
 def handle_request(connection, address,dir):
     req = connection.recv(1024).decode() # receive data
     data = req.split("\r\n")
+    type = data[0].split(" ")[0]
     endpoint = data[0].split(" ")[1]
     response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
 
@@ -24,8 +25,13 @@ def handle_request(connection, address,dir):
                 response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(userAgent)}\r\n\r\n{userAgent}'.encode()
                 break
     elif endpoint.startswith("/files/"):
-        filePath = f'{dir}/{endpoint.split("/")[2]}'
-        if os.path.isfile(filePath):
+        filePath = f'{dir}/{endpoint[7:]}'
+        if type == "POST":
+            content = data[-1]
+            with open(filePath, "w") as f:
+                f.write(content)
+            response = "HTTP/1.1 201 Created\r\n\r\n".encode()
+        elif os.path.isfile(filePath):
             with open(filePath, "r") as f:
                 content = f.read()
                 print(content)
