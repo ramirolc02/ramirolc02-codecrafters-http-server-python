@@ -26,7 +26,7 @@ def handle_request(connection, address):
     elif endpoint.startswith("/echo/") :
         string = endpoint.split("/")[2]
         compressionType: str = handle_compression(data)
-        encoding = None
+        encoding = ""
         if compressionType != "invalid-encoding":
             encoding = f'Content-Encoding: {compressionType}\r\n'
         response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
