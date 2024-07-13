@@ -28,6 +28,7 @@ def handle_request(connection, address):
         body: str = endpoint.split("/")[-1] # Last part of the endpoint
         compressionType: list[str] = handle_compression(data)
         encoding = ""
+        encodedString = b""
         if "gzip" in compressionType:
             encoding = f'Content-Encoding: gzip\r\n'
             encodedString = gzip.compress(body.encode()) # Already in bytes
