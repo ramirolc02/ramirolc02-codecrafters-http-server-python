@@ -43,11 +43,8 @@ def main():
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
 
     while True:
-        connection, address = server_socket.accept() # wait for client
-        if dir: 
-            thread = Thread(target=handle_request, args=(connection, address, dir))
-        else: 
-            thread = Thread(target=handle_request, args=(connection, address))
+        connection, address = server_socket.accept() # wait for client 
+        thread = Thread(target=handle_request, args=(connection, address, dir))
         thread.start()
 
 if __name__ == "__main__":  
