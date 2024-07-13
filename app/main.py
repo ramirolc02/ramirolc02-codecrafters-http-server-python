@@ -1,3 +1,4 @@
+import gzip
 import os.path
 import socket
 import sys
@@ -24,11 +25,12 @@ def handle_request(connection, address):
     if endpoint == "/":
         response = "HTTP/1.1 200 OK\r\n\r\n".encode()
     elif endpoint.startswith("/echo/") :
-        string = endpoint.split("/")[2]
+        string = endpoint.split("/")[-1] # Last part of the endpoint
         compressionType: list[str] = handle_compression(data)
         encoding = ""
         if "gzip" in compressionType:
             encoding = f'Content-Encoding: gzip\r\n'
+            string = gzip.compress(string.encode())
         response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
     elif endpoint == "/user-agent":
         for line in data:
