@@ -28,11 +28,12 @@ def handle_request(connection, address):
         body: str = endpoint.split("/")[-1] # Last part of the endpoint
         compressionType: list[str] = handle_compression(data)
         encoding = ""
-        encodedString = b""
         if "gzip" in compressionType:
             encoding = f'Content-Encoding: gzip\r\n'
             encodedString = gzip.compress(body.encode()) # Already in bytes
-        response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(encodedString)}\r\n\r\n'.encode() + encodedString
+            response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(encodedString)}\r\n\r\n'.encode() + encodedString
+        else:
+            response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}'.encode()
     elif endpoint == "/user-agent":
         for line in data:
             if line.startswith("User-Agent:"):
