@@ -1,5 +1,3 @@
-
-
 import os.path
 import socket
 import sys
@@ -7,11 +5,13 @@ from threading import Thread
 
 
 def handle_compression(headers: str):
+    supported = []
     for line in headers:
         if line.startswith("Accept-Encoding:"):
-            compressionType = line.split(": ")[1]
-            return compressionType
-    return "invalid-encoding"
+            compressionTypes = line.split(": ")[1].split(", ")
+            supported = [compressionType for compressionType in compressionTypes if not compressionType.startswith("invalid-encoding")]
+    return supported
+  
             
 
 def handle_request(connection, address):
@@ -25,10 +25,10 @@ def handle_request(connection, address):
         response = "HTTP/1.1 200 OK\r\n\r\n".encode()
     elif endpoint.startswith("/echo/") :
         string = endpoint.split("/")[2]
-        compressionType: str = handle_compression(data)
+        compressionType: list[str] = handle_compression(data)
         encoding = ""
-        if compressionType != "invalid-encoding":
-            encoding = f'Content-Encoding: {compressionType}\r\n'
+        if "gzip" in compressionType:
+            encoding = f'Content-Encoding: "gzip"\r\n'
         response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
     elif endpoint == "/user-agent":
         for line in data:
