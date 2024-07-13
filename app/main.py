@@ -1,13 +1,17 @@
 
+
+import os.path
 import socket
+import sys
 from threading import Thread
 
 
-def handle_request(connection, address):
+def handle_request(connection, address,dir):
     req = connection.recv(1024).decode() # receive data
     data = req.split("\r\n")
     endpoint = data[0].split(" ")[1]
-   
+    response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
+
     if endpoint == "/":
         response = "HTTP/1.1 200 OK\r\n\r\n".encode()
     elif endpoint.startswith("/echo/") :
@@ -19,20 +23,28 @@ def handle_request(connection, address):
                 userAgent = line.split(": ")[1]
                 response = f'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(userAgent)}\r\n\r\n{userAgent}'.encode()
                 break
-    else:
-        response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()   
-        print(connection)
+    elif endpoint.startswith("/files/"):
+        filePath = f'{dir}/{endpoint.split("/")[2]}'
+        if os.path.isfile(filePath):
+            with open(filePath, "r") as f:
+                content = f.read()
+                print(content)
+                response = f'HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(content)}\r\n\r\n{content}'.encode()
+
     connection.send(response) # send response 
     connection.close() # close the connection after sending the response
 def main():
     print("Logs from your program will appear here!")
+    flag = sys.argv[1] if len(sys.argv) > 1 else []
+    if "--directory" in flag:
+        dir = sys.argv[2]
 
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
 
     while True:
         connection, address = server_socket.accept() # wait for client
-        thread = Thread(target=handle_request, args=(connection, address))
+        thread = Thread(target=handle_request, args=(connection, address, dir)) if dir is not None else Thread(target=handle_request, args=(connection, address))
         thread.start()
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     main()
