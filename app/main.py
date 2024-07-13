@@ -28,7 +28,7 @@ def handle_request(connection, address):
         compressionType: list[str] = handle_compression(data)
         encoding = ""
         if "gzip" in compressionType:
-            encoding = f'Content-Encoding: "gzip"\r\n'
+            encoding = f'Content-Encoding: gzip\r\n'
         response = f'HTTP/1.1 200 OK\r\n{encoding}Content-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}'.encode()
     elif endpoint == "/user-agent":
         for line in data:
